@@ -226,7 +226,19 @@ Blockchain.prototype.getAddressData = function(address) {
       blockArray.push(block);
     }
   });
+
+  let balance = 0;
+  transactionArray.forEach(transaction => {
+    if (transaction.recipient === address) {
+      balance += transaction.amount;
+    }
+    else {
+      balance -= transaction.amount;
+    }
+  })
+
   return {
+    balance: balance,
     transactions: transactionArray.length > 0 ? transactionArray : null,
     blocks: blockArray.length > 0 ? blockArray : null
   }

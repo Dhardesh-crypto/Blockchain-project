@@ -308,12 +308,11 @@ app.get('/transaction/:transactionId', function(req, res) {
 });
 
 app.get('/address/:address', function(req, res) {
-  console.log(req.params);
   const { address } = req.params;
-  console.log(address);
-  const { transactions, blocks } = excalibur.getAddressData(address);
+  const { balance, transactions, blocks } = excalibur.getAddressData(address);
   res.json({
     address: address,
+    balance: balance,
     transactions: transactions,
     blocks: blocks
   });
