@@ -55,7 +55,7 @@ that starts with '0000'). The block reward is created as a transaction which wil
 - method = GET
 - URL = http://localhost:3001/mine
 
-# Endpoint: http://localhost:3004/consensus
+# Endpoint: /consensus
 With this endpoint you can synchronize a network node to get a valid copy of the longest chain in the network.
 
 - method = GET
