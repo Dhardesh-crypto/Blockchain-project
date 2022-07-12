@@ -290,6 +290,35 @@ app.get("/consensus", function (req, res) {
   }
 });
 
+app.get('/block/:blockHash', function(req, res) {
+  const { blockHash} = req.params;
+  const correctBlock = excalibur.getBlock(blockHash);
+  res.json({
+    block: correctBlock
+  });
+});
+
+app.get('/transaction/:transactionId', function(req, res) {
+  const { transactionId} = req.params;
+  const { block, transaction } = excalibur.getTransaction(transactionId);
+  res.json({
+    transaction: transaction,
+    block: block
+  });
+});
+
+app.get('/address/:address', function(req, res) {
+  console.log(req.params);
+  const { address } = req.params;
+  console.log(address);
+  const { transactions, blocks } = excalibur.getAddressData(address);
+  res.json({
+    address: address,
+    transactions: transactions,
+    blocks: blocks
+  });
+});
+
 app.listen(port, function () {
   console.log(`Listening on port ${port}... for addres ${NODE_ADDRESS}`);
 });
