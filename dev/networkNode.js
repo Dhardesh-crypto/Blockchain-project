@@ -14,6 +14,8 @@ const excalibur = new Blockchain();
 const MINING_REWARD = 6.25;
 const MINING_SENDER_ADDRESS = "00";
 const NODE_ADDRESS = uuidv4().split("-").join(""); // We do not want - in our nodeaddress
+const FAUCET_AMOUNT = 1;
+const FAUCET_SENDER_ADDRESS = "01";
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -42,27 +44,32 @@ app.post("/transaction/broadcast", function (req, res) {
     sender,
     recipient
   );
-  excalibur.addTransactionToPendingTransactions(newTransaction);
+  if (newTransaction) {
+    excalibur.addTransactionToPendingTransactions(newTransaction);
 
-  const requestPromises = [];
+    const requestPromises = [];
 
-  excalibur.networkNodes.forEach((networkNodeUrl) => {
-    const requestOptions = {
-      method: "post",
-      url: networkNodeUrl + "/transaction",
-      data: newTransaction,
-    };
-    requestPromises.push(axios(requestOptions));
-  });
-
-  Promise.all(requestPromises)
-    .then((data) => {
-      res.json({ note: "Transaction broadcast successfully" });
-    })
-    .catch((error) => {
-      console.log(error);
-      res.json({ note: error });
+    excalibur.networkNodes.forEach((networkNodeUrl) => {
+      const requestOptions = {
+        method: "post",
+        url: networkNodeUrl + "/transaction",
+        data: newTransaction,
+      };
+      requestPromises.push(axios(requestOptions));
     });
+
+    Promise.all(requestPromises)
+      .then((data) => {
+        res.json({ note: "Transaction broadcast successfully" });
+      })
+      .catch((error) => {
+        console.log(error);
+        res.json({ note: error });
+      });
+  }
+  else {
+    res.json({ note: 'Sender does not have enough balance!' });
+  }
 });
 
 /**
@@ -322,6 +329,29 @@ app.get('/address/:address', function(req, res) {
 
 app.get('/block-explorer', function(req, res) {
   res.sendFile('./block-explorer/index.html', { root: __dirname });
+});
+
+app.post('/faucet/:faucet', function(req, res) {
+  const { recipient } = req.body;
+  const { faucet } = req.params;
+
+  const faucetRequestOptions = {
+    method: "post",
+    url: excalibur.currentNodeUrl + "/transaction/broadcast",
+    data: {
+      amount: faucet? Number(faucet) : FAUCET_AMOUNT,
+      sender: FAUCET_SENDER_ADDRESS,
+      recipient: recipient,
+    }
+  };
+  const requestPromises = [];
+  requestPromises.push(axios(faucetRequestOptions));
+  Promise.all(requestPromises)
+    .then((data) => {
+      res.json({
+        note: "New faucet transaction broadcast successfully"
+      });
+    });
 });
 
 app.listen(port, function () {

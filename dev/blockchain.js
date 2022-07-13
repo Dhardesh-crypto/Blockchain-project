@@ -2,6 +2,9 @@ const sha256 = require("sha256");
 const { v4: uuidv4 } = require("uuid");
 const currentNodeUrl = process.argv[3];
 
+const MINING_SENDER_ADDRESS = "00";
+const FAUCET_SENDER_ADDRESS = "01";
+
 /* Constructor function for our Blockchain class */
 function Blockchain() {
   this.chain = [];
@@ -74,15 +77,20 @@ Blockchain.prototype.createNewTransaction = function (
   sender,
   recipient
 ) {
-  // The new transaction has an amount, sender and recipient as properties
-  const newTransaction = {
-    amount,
-    sender,
-    recipient,
-    transactionId: uuidv4().split("-").join(""),
-  };
-
-  return newTransaction;
+  const senderBalance = this.getAddressBalance(sender);
+  if (senderBalance >= amount || sender === MINING_SENDER_ADDRESS || sender === FAUCET_SENDER_ADDRESS) {
+    // The new transaction has an amount, sender and recipient as properties
+    const newTransaction = {
+      amount,
+      sender,
+      recipient,
+      transactionId: uuidv4().split("-").join(""),
+    };
+    return newTransaction;
+  }
+  else {
+    return null;
+  }
 };
 
 Blockchain.prototype.addTransactionToPendingTransactions = function (
@@ -239,9 +247,32 @@ Blockchain.prototype.getAddressData = function(address) {
 
   return {
     balance: balance,
-    transactions: transactionArray.length > 0 ? transactionArray : [],
-    blocks: blockArray.length > 0 ? blockArray : []
+    transactions: transactionArray.length > 0 ? transactionArray : null,
+    blocks: blockArray.length > 0 ? blockArray : null
   }
+}
+
+Blockchain.prototype.getAddressBalance = function(address) {
+  let transactionArray = [];
+
+  this.chain.forEach(block => {
+    const foundTransactionArray = block.transactions.filter(transaction => transaction.sender === address || transaction.recipient === address);
+    if (foundTransactionArray.length > 0) {
+      transactionArray = [...transactionArray, ...foundTransactionArray];
+    }
+  });
+
+  let balance = 0;
+  transactionArray.forEach(transaction => {
+    if (transaction.recipient === address) {
+      balance += transaction.amount;
+    }
+    else {
+      balance -= transaction.amount;
+    }
+  })
+
+  return balance;
 }
 
 module.exports = Blockchain;
