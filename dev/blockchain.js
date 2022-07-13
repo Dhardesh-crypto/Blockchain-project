@@ -239,8 +239,8 @@ Blockchain.prototype.getAddressData = function(address) {
 
   return {
     balance: balance,
-    transactions: transactionArray.length > 0 ? transactionArray : null,
-    blocks: blockArray.length > 0 ? blockArray : null
+    transactions: transactionArray.length > 0 ? transactionArray : [],
+    blocks: blockArray.length > 0 ? blockArray : []
   }
 }
 
