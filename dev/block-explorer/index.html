@@ -132,6 +132,7 @@
 			$scope.fetchBlock = function(blockHash) {
 				$http.get(`/block/${blockHash}`)
 				.then(response => {
+					console.log(response);
 					$scope.block = response.data.block;
 					$scope.transaction = null;
 					$scope.addressData = null;
